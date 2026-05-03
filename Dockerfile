@@ -14,7 +14,7 @@ RUN npm install --production
 COPY . .
 
 # Exclui o banco de dados local da imagem para iniciar um banco limpo
-RUN rm -f database.sqlite
+RUN rm -rf data/
 
 # Expõe a porta que o servidor Node utiliza
 EXPOSE 3000

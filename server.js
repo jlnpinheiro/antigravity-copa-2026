@@ -4,6 +4,7 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,7 +15,11 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Inicializar banco de dados SQLite
-const dbFile = path.join(__dirname, 'database.sqlite');
+const dataDir = path.join(__dirname, 'data');
+if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir);
+}
+const dbFile = path.join(dataDir, 'database.sqlite');
 const db = new sqlite3.Database(dbFile, (err) => {
     if (err) {
         console.error('Erro ao abrir o banco de dados', err.message);

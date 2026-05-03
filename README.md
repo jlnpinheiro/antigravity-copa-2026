@@ -43,12 +43,14 @@ Se você desejar publicar o projeto numa VPS ou servidor local usando Docker, o 
 
 1. Construa a imagem Docker:
    ```bash
-   docker build -t copa-2026 .
+   docker build -t jlnpinheiro/copa-2026-album:latest .
    ```
-2. Execute o container mapeando a pasta `data` para garantir que o banco de dados persista:
+2. Execute o container mapeando a pasta `data` como um volume (Recomendado):
    ```bash
-   docker run -d -p 3000:3000 -v $(pwd)/data:/usr/src/app/data --name album-copa copa-2026
+   docker run -d --name copa-2026-album -p 3000:3000 --security-opt seccomp=unconfined -v album-db-data:/app/data jlnpinheiro/copa-2026-album:latest
    ```
+
+*Nota: Ao utilizar o volume apontando para `/app/data`, o banco de dados (SQLite) persiste fora do ciclo de vida do container. Você não perderá os dados ao atualizar a aplicação.*
 
 ## 🔒 Acesso e Credenciais
 - O primeiro usuário cadastrado no sistema não ganha privilégios de Admin automaticamente (pode ser ajustado via banco de dados diretamente, alterando a coluna `role` para `admin`).

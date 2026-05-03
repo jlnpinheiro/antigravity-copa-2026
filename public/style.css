@@ -1,0 +1,112 @@
+/* font-inter applied via Tailwind */
+body {
+    background-color: #009C3B;
+}
+
+/* Painéis Clean */
+.glass-panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.sticker-card {
+    transition: all 0.2s ease-in-out;
+}
+
+.sticker-card:hover {
+    transform: translateY(-2px);
+    border-color: #009c3b;
+}
+
+/* Cards de figurinhas */
+.sticker-obtained {
+    background-color: #009C3B !important;
+    border-color: #008231 !important;
+}
+
+.sticker-missing {
+    background-color: #FFFFFF !important;
+    border-color: #E2E8F0 !important;
+}
+
+/* Animações sutis */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Custom Scrollbar limpo */
+.custom-scrollbar::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Esconder elementos na impressão e estilos de grid */
+@media print {
+    body {
+        background: white !important;
+        color: black !important;
+    }
+    
+    .print-hide {
+        display: none !important;
+    }
+
+    .print-only {
+        display: block !important;
+    }
+    
+    #app {
+        display: none !important;
+    }
+
+    .print-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
+        gap: 2px;
+        margin-bottom: 15px;
+    }
+    .print-cell {
+        border: 1px solid #333;
+        text-align: center;
+        font-size: 10px;
+        padding: 4px 0;
+        font-family: sans-serif;
+    }
+    .print-cell.obtained {
+        background-color: #ccc !important;
+        color: #888 !important;
+        text-decoration: line-through;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .print-cell.missing {
+        background-color: white !important;
+        color: black !important;
+    }
+    .print-section-title {
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 5px;
+        margin-bottom: 3px;
+        text-transform: uppercase;
+        border-bottom: 1px solid #000;
+        page-break-after: avoid;
+    }
+}
+

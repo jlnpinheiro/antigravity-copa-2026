@@ -59,7 +59,7 @@ const db = new sqlite3.Database(dbFile, (err) => {
 
 // Grupos
 const groupsData = {
-    'A': [ {name: 'México', code: 'mx', prefix: 'MEX'}, {name: 'África do Sul', code: 'za', prefix: 'RSA'}, {name: 'Coreia do Sul', code: 'kr', prefix: 'KOR'}, {name: 'Tchéquia', code: 'cz', prefix: 'CZE'} ],
+    'A': [ {name: 'México', code: 'mx', prefix: 'MEX'}, {name: 'África do Sul', code: 'za', prefix: 'RSA'}, {name: 'Coreia do Sul', code: 'kr', prefix: 'KOR'}, {name: 'Rep. Tcheca', code: 'cz', prefix: 'CZE'} ],
     'B': [ {name: 'Canadá', code: 'ca', prefix: 'CAN'}, {name: 'Bósnia e Herz.', code: 'ba', prefix: 'BIH'}, {name: 'Catar', code: 'qa', prefix: 'QAT'}, {name: 'Suíça', code: 'ch', prefix: 'SUI'} ],
     'C': [ {name: 'Brasil', code: 'br', prefix: 'BRA'}, {name: 'Marrocos', code: 'ma', prefix: 'MAR'}, {name: 'Haiti', code: 'ht', prefix: 'HAI'}, {name: 'Escócia', code: 'gb-sct', prefix: 'SCO'} ],
     'D': [ {name: 'EUA', code: 'us', prefix: 'USA'}, {name: 'Paraguai', code: 'py', prefix: 'PAR'}, {name: 'Austrália', code: 'au', prefix: 'AUS'}, {name: 'Turquia', code: 'tr', prefix: 'TUR'} ],
@@ -129,6 +129,9 @@ async function checkAndSeedData() {
             console.log("Usuário ADMIN criado com sucesso.");
         }
     });
+
+    // Atualização de dados legados (corrige nome do país se já existir no banco)
+    db.run("UPDATE stickers SET team_name = 'Rep. Tcheca' WHERE team_name = 'Tchéquia'");
 }
 
 // Middleware de Autenticação

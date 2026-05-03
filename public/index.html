@@ -98,6 +98,22 @@
         <!-- Filtros e Abas -->
         <div class="w-full mt-4 sm:mt-6 print-hide">
             
+            <!-- Barra de Pesquisa de Países -->
+            <div class="mb-4 relative z-40">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="text-slate-400">🔍</span>
+                    </div>
+                    <input type="text" id="country-search" autocomplete="off" placeholder="Pesquisar país (ex: Brasil, Argentina)..." class="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 font-bold focus:outline-none focus:border-[#002776] shadow-sm">
+                    <button id="clear-search" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-500 hidden">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div id="country-suggestions" class="absolute w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto z-50">
+                    <!-- Sugestões geradas via JS -->
+                </div>
+            </div>
+            
             <!-- Mobile Selects -->
             <div class="flex flex-col gap-4 mb-6 sm:hidden bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                 <div>

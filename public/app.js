@@ -3,6 +3,7 @@ let currentFilter = 'all';
 let currentTab = 'Especiais'; 
 let groupsList = [];
 let authMode = 'login'; // 'login' or 'register'
+let currentSearchTeam = null;
 
 // Função para resolver URLs baseadas no diretório atual (Proxy reverso)
 function getBaseUrl(path) {
@@ -16,6 +17,7 @@ function getBaseUrl(path) {
 // Verifica token no carregamento
 document.addEventListener('DOMContentLoaded', () => {
     setupFilters();
+    setupSearch();
     
     const mobileTabSelect = document.getElementById('mobile-tab-select');
     if(mobileTabSelect) {
@@ -256,6 +258,83 @@ function setupFilters() {
     }
 }
 
+function setupSearch() {
+    const searchInput = document.getElementById('country-search');
+    const suggestionsDiv = document.getElementById('country-suggestions');
+    const clearBtn = document.getElementById('clear-search');
+
+    if (!searchInput) return;
+
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        if (query.length === 0) {
+            suggestionsDiv.classList.add('hidden');
+            clearBtn.classList.add('hidden');
+            if (currentSearchTeam !== null) {
+                currentSearchTeam = null;
+                renderStickers();
+            }
+            return;
+        }
+
+        clearBtn.classList.remove('hidden');
+
+        // Extract unique team names
+        const uniqueTeams = Array.from(new Set(allStickers.map(s => s.team_name)));
+        const matches = uniqueTeams.filter(t => t.toLowerCase().includes(query));
+
+        if (matches.length > 0) {
+            suggestionsDiv.innerHTML = matches.map(match => {
+                const sticker = allStickers.find(s => s.team_name === match);
+                const flagHtml = (sticker && sticker.team_flag_url && sticker.team_flag_url !== 'null') 
+                    ? `<img src="${sticker.team_flag_url}" class="w-6 h-auto border border-slate-200">` 
+                    : '';
+                return `
+                    <div class="p-3 hover:bg-slate-100 cursor-pointer flex items-center gap-3 border-b border-slate-100 last:border-0" onclick="selectCountry('${match}')">
+                        ${flagHtml}
+                        <span class="font-bold text-slate-700">${match}</span>
+                    </div>
+                `;
+            }).join('');
+            suggestionsDiv.classList.remove('hidden');
+        } else {
+            suggestionsDiv.innerHTML = `<div class="p-3 text-slate-500 italic">Nenhum país encontrado.</div>`;
+            suggestionsDiv.classList.remove('hidden');
+        }
+    });
+
+    clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        suggestionsDiv.classList.add('hidden');
+        clearBtn.classList.add('hidden');
+        currentSearchTeam = null;
+        renderStickers();
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+            suggestionsDiv.classList.add('hidden');
+        }
+    });
+}
+
+function selectCountry(teamName) {
+    const searchInput = document.getElementById('country-search');
+    const suggestionsDiv = document.getElementById('country-suggestions');
+    
+    searchInput.value = teamName;
+    suggestionsDiv.classList.add('hidden');
+    currentSearchTeam = teamName;
+    
+    const teamStickers = allStickers.filter(s => s.team_name === teamName);
+    if (teamStickers.length > 0) {
+        currentTab = teamStickers[0].group_name;
+        renderTabs();
+    }
+    
+    renderStickers();
+}
+
 function setFilter(filter) {
     currentFilter = filter;
     renderStickers();
@@ -300,6 +379,10 @@ function renderStickers() {
     appDiv.innerHTML = '';
     
     let tabStickers = allStickers.filter(s => s.group_name === currentTab);
+    
+    if (currentSearchTeam) {
+        tabStickers = tabStickers.filter(s => s.team_name === currentSearchTeam);
+    }
     
     let filteredStickers = tabStickers;
     if (currentFilter === 'missing') {

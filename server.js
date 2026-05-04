@@ -124,7 +124,8 @@ async function checkAndSeedData() {
     // Criar Admin padrão
     db.get("SELECT COUNT(*) as count FROM users WHERE username = 'admin'", async (err, row) => {
         if (row.count === 0) {
-            const hash = await bcrypt.hash('Surf1st@', 10);
+            const adminPassword = process.env.ADMIN_PASSWORD || 'admin';
+            const hash = await bcrypt.hash(adminPassword, 10);
             db.run("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", ['admin', hash, 'admin']);
             console.log("Usuário ADMIN criado com sucesso.");
         }
@@ -251,7 +252,13 @@ app.post('/api/stickers/:number/duplicates', authenticateToken, (req, res) => {
 
 // Rotas de Administração
 app.get('/api/admin/users', authenticateToken, requireAdmin, (req, res) => {
-    db.all("SELECT id, username, role FROM users", [], (err, rows) => {
+    const query = `
+        SELECT u.id, u.username, u.role, 
+               (SELECT COUNT(*) FROM user_stickers us WHERE us.user_id = u.id AND us.obtained = 1) as sticker_count 
+        FROM users u 
+        WHERE u.role != 'admin'
+    `;
+    db.all(query, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ users: rows });
     });
@@ -265,11 +272,14 @@ app.post('/api/admin/users/:id/reset', authenticateToken, requireAdmin, (req, re
 });
 
 app.post('/api/admin/users/:id/temp-password', authenticateToken, requireAdmin, async (req, res) => {
-    const tempPass = "Temp1234";
+    const tempPass = req.body.password;
+    if (!tempPass || tempPass.length < 8) {
+        return res.status(400).json({ error: "A senha deve ter pelo menos 8 caracteres." });
+    }
     const hash = await bcrypt.hash(tempPass, 10);
     db.run("UPDATE users SET password = ? WHERE id = ?", [hash, req.params.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: "Senha temporária definida como: Temp1234" });
+        res.json({ message: "Senha redefinida com sucesso." });
     });
 });
 

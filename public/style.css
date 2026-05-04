@@ -58,6 +58,11 @@ body {
 
 /* Esconder elementos na impressão e estilos de grid */
 @media print {
+    @page {
+        margin: 5mm;
+        size: A4 portrait;
+    }
+    
     body {
         background: white !important;
         color: black !important;
@@ -75,38 +80,83 @@ body {
         display: none !important;
     }
 
-    .print-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
-        gap: 2px;
-        margin-bottom: 15px;
+    .print-table {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        font-family: Arial, sans-serif;
+        font-size: 8px;
+        margin-bottom: 20px;
     }
-    .print-cell {
-        border: 1px solid #333;
+    
+    .print-table th, .print-table td {
+        border: 1.5px solid #000;
         text-align: center;
-        font-size: 10px;
-        padding: 4px 0;
-        font-family: sans-serif;
+        padding: 2px 0px;
+        height: 20.5px;
+        line-height: 1.1;
+        overflow: hidden;
     }
-    .print-cell.obtained {
-        background-color: #ccc !important;
-        color: #888 !important;
-        text-decoration: line-through;
+    
+    .print-table tr.group-start td {
+        border-top: 3.5px solid #000;
+    }
+    
+    .print-table .group-name {
+        font-weight: bold;
+        font-size: 12px;
+        vertical-align: middle;
+        background-color: #e2e8f0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        width: 7%;
+    }
+    
+    .print-table .team-name {
+        text-align: right;
+        font-weight: bold;
+        padding-right: 6px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        width: 21%;
+        font-size: 10px;
+    }
+    
+    .print-table .team-prefix {
+        font-weight: bold;
+        background-color: #f1f5f9 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        width: 6%;
+    }
+    
+    .print-table .sticker-cell {
+        width: 3.3%;
+        font-weight: bold;
+        font-size: 10px;
+    }
+    
+    .print-table .cc-text {
+        font-size: 7px;
+    }
+    
+    .print-table .obtained {
+        background-color: #94a3b8 !important; /* Darker gray to match the image better */
+        color: #475569 !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
-    .print-cell.missing {
+    
+    .print-table .missing {
         background-color: white !important;
         color: black !important;
     }
-    .print-section-title {
-        font-size: 14px;
-        font-weight: bold;
-        margin-top: 5px;
-        margin-bottom: 3px;
-        text-transform: uppercase;
-        border-bottom: 1px solid #000;
-        page-break-after: avoid;
+
+    .print-table th.main-header {
+        background-color: #e2e8f0 !important;
+        font-size: 8px;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 }
 

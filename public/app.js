@@ -31,10 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const token = localStorage.getItem('token');
     if (token) {
-        showScreen('app');
-        fetchStickers();
-        checkAdmin();
         document.getElementById('nav-username').textContent = localStorage.getItem('username');
+        checkAdmin();
+        if (localStorage.getItem('role') === 'admin') {
+            showScreen('admin');
+        } else {
+            showScreen('app');
+            fetchStickers();
+        }
     } else {
         showScreen('auth');
     }
@@ -82,16 +86,25 @@ function showScreen(screen) {
         document.getElementById('view-app').classList.add('flex');
         document.getElementById('view-app').classList.add('flex-col');
     } else if (screen === 'admin') {
+        document.getElementById('main-nav').classList.remove('hidden');
         document.getElementById('view-admin').classList.remove('hidden');
         loadAdminUsers();
     }
 }
 
 function checkAdmin() {
-    if (localStorage.getItem('role') === 'admin') {
-        document.getElementById('btn-admin-nav').classList.remove('hidden');
+    const role = localStorage.getItem('role');
+    const adminNavBtn = document.getElementById('btn-admin-nav');
+    const voltarAlbumBtn = document.getElementById('btn-voltar-album');
+    const printBtn = document.querySelector('button[onclick="window.print()"]');
+    
+    if (role === 'admin') {
+        if (adminNavBtn) adminNavBtn.classList.add('hidden');
+        if (voltarAlbumBtn) voltarAlbumBtn.classList.add('hidden');
+        if (printBtn) printBtn.classList.add('hidden');
     } else {
-        document.getElementById('btn-admin-nav').classList.add('hidden');
+        if (adminNavBtn) adminNavBtn.classList.add('hidden'); // Regular users don't see admin panel
+        if (printBtn) printBtn.classList.remove('hidden');
     }
 }
 
@@ -139,8 +152,12 @@ async function handleAuth(e) {
             localStorage.setItem('username', data.username);
             document.getElementById('nav-username').textContent = data.username;
             checkAdmin();
-            fetchStickers();
-            showScreen('app');
+            if (data.role === 'admin') {
+                showScreen('admin');
+            } else {
+                fetchStickers();
+                showScreen('app');
+            }
         }
     } catch (err) {
         errDiv.textContent = 'Erro de conexão com o servidor.';
@@ -499,20 +516,101 @@ function preparePrint() {
     const printContent = document.getElementById('print-content');
     const printTitle = document.getElementById('print-title');
     
-    printTitle.textContent = "Checklist Completo do Álbum";
-    let listHTML = '<div class="print-grid">';
+    printTitle.textContent = "FIGURINHAS COPA 2026";
+    printTitle.className = "text-xl font-black text-center uppercase tracking-widest mb-2 print-only";
     
+    let html = '<table class="print-table">';
+    html += `
+        <tbody>
+    `;
+
+    const normalGroups = {}; 
+    const fwcStickers = [];
+    const ccStickers = [];
+
     allStickers.forEach(s => {
-        let n = s.number;
-        
-        let cellClass = 'print-cell';
-        cellClass += s.obtained ? ' obtained' : ' missing';
-        
-        listHTML += `<div class="${cellClass}">${n}</div>`;
+        if (s.group_name.startsWith('Grupo')) {
+            if (!normalGroups[s.group_name]) normalGroups[s.group_name] = {};
+            if (!normalGroups[s.group_name][s.team_name]) normalGroups[s.group_name][s.team_name] = [];
+            normalGroups[s.group_name][s.team_name].push(s);
+        } else if (s.number.startsWith('FWC')) {
+            fwcStickers.push(s);
+        } else if (s.number.startsWith('CC')) {
+            ccStickers.push(s);
+        }
     });
-    
-    listHTML += `</div>`;
-    printContent.innerHTML = listHTML;
+
+    const groupLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+    groupLetters.forEach(letter => {
+        const groupName = `Grupo ${letter}`;
+        if (!normalGroups[groupName]) return;
+        
+        const teams = Object.keys(normalGroups[groupName]);
+        teams.forEach((team, index) => {
+            html += `<tr${index === 0 ? ' class="group-start"' : ''}>`;
+            if (index === 0) {
+                html += `<td rowspan="${teams.length}" class="group-name">GRUPO<br><span style="font-size: 14px">${letter}</span></td>`;
+            }
+            
+            const teamStickers = normalGroups[groupName][team];
+            teamStickers.sort((a, b) => a.order_index - b.order_index);
+            
+            const prefix = teamStickers[0].number.split(' ')[0];
+            
+            html += `<td class="team-name">${team}</td>`;
+            html += `<td class="team-prefix">${prefix}</td>`;
+            
+            for (let i = 1; i <= 20; i++) {
+                const suffix = i.toString();
+                const sticker = teamStickers.find(s => s.number.endsWith(' ' + suffix) || s.number === (prefix + suffix));
+                
+                if (sticker) {
+                    const statusClass = sticker.obtained ? 'obtained' : 'missing';
+                    html += `<td class="sticker-cell ${statusClass}">${i}</td>`;
+                } else {
+                    html += `<td class="sticker-cell missing"></td>`;
+                }
+            }
+            html += '</tr>';
+        });
+    });
+
+    fwcStickers.sort((a, b) => a.order_index - b.order_index);
+    if (fwcStickers.length > 0) {
+        html += `<tr class="group-start">`;
+        html += `<td colspan="2" class="team-name" style="text-align: center;">FIFA WORLD CUP HISTORY</td>`;
+        html += `<td class="team-prefix">FWC</td>`;
+        for (let i = 0; i < 20; i++) {
+            if (i < fwcStickers.length) {
+                const s = fwcStickers[i];
+                const dispNum = s.number.replace('FWC ', '');
+                const statusClass = s.obtained ? 'obtained' : 'missing';
+                html += `<td class="sticker-cell ${statusClass}">${dispNum}</td>`;
+            } else {
+                html += `<td></td>`;
+            }
+        }
+        html += `</tr>`;
+    }
+
+    ccStickers.sort((a, b) => a.order_index - b.order_index);
+    if (ccStickers.length > 0) {
+        html += `<tr class="group-start">`;
+        html += `<td colspan="3" class="team-name" style="text-align: center;">FIGURINHAS DA COCA-COLA</td>`;
+        for (let i = 0; i < 20; i++) {
+            if (i < ccStickers.length) {
+                const s = ccStickers[i];
+                const statusClass = s.obtained ? 'obtained' : 'missing';
+                html += `<td class="sticker-cell ${statusClass} cc-text">${s.number}</td>`;
+            } else {
+                html += `<td></td>`;
+            }
+        }
+        html += `</tr>`;
+    }
+
+    html += '</tbody></table>';
+    printContent.innerHTML = html;
 }
 
 // Funções do Painel Admin
@@ -531,11 +629,11 @@ async function loadAdminUsers() {
             tr.innerHTML = `
                 <td class="py-3 px-4">${u.id}</td>
                 <td class="py-3 px-4 font-medium text-slate-800">${u.username}</td>
-                <td class="py-3 px-4"><span class="px-2 py-1 rounded text-xs ${u.role === 'admin' ? 'bg-indigo-900 text-indigo-300' : 'bg-[#002776] text-slate-700'}">${u.role}</span></td>
+                <td class="py-3 px-4 text-center font-bold text-slate-600">${u.sticker_count || 0}</td>
                 <td class="py-3 px-4 text-right flex justify-end gap-2">
                     <button onclick="adminReset(${u.id})" class="px-2 py-1 bg-amber-600 hover:bg-amber-700 rounded text-xs text-white" title="Resetar Álbum">Zerar</button>
-                    <button onclick="adminTempPass(${u.id})" class="px-2 py-1 bg-slate-600 hover:bg-slate-500 rounded text-xs text-white" title="Senha Temporária">Senha</button>
-                    <button onclick="adminDelete(${u.id})" class="px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-xs text-white" title="Excluir Usuário" ${u.role === 'admin' ? 'disabled' : ''}>Del</button>
+                    <button onclick="adminTempPass(${u.id})" class="px-2 py-1 bg-slate-600 hover:bg-slate-500 rounded text-xs text-white" title="Redefinir Senha">Redefinir senha</button>
+                    <button onclick="adminDelete(${u.id})" class="px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-xs text-white" title="Excluir Usuário">Excluir</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -562,7 +660,23 @@ async function adminReset(id) {
 }
 
 async function adminTempPass(id) {
-    adminAction(`/api/admin/users/${id}/temp-password`, 'Definir senha temporária (Temp1234)?');
+    const newPass = prompt("Digite a nova senha para este usuário (mínimo 8 caracteres):");
+    if (!newPass) return;
+    if (newPass.length < 8) {
+        alert("A senha deve ter pelo menos 8 caracteres.");
+        return;
+    }
+    try {
+        const res = await fetch(getBaseUrl(`/api/admin/users/${id}/temp-password`), {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ password: newPass })
+        });
+        const data = await res.json();
+        alert(data.message || data.error);
+    } catch (e) {
+        alert('Erro na requisição');
+    }
 }
 
 async function adminDelete(id) {

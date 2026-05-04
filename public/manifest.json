@@ -1,13 +1,13 @@
 {
   "name": "Álbum Copa 2026",
   "short_name": "Copa 2026",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#009C3B",
   "theme_color": "#009C3B",
   "icons": [
     {
-      "src": "/icon.png",
+      "src": "icon.png",
       "sizes": "192x192 512x512",
       "type": "image/png",
       "purpose": "any maskable"
